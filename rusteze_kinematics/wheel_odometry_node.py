@@ -21,7 +21,7 @@ from nav_msgs.msg import Odometry
 from geometry_msgs.msg import Quaternion, TransformStamped
 from tf2_ros import TransformBroadcaster
 
-from robot_kinematics import build_kinematics
+from rusteze_kinematics.robot_kinematics import build_kinematics
 
 
 def yaw_to_quaternion(yaw):
