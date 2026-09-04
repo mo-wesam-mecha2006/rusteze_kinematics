@@ -63,3 +63,26 @@ ros2 run tf2_ros tf2_echo odom base_link
 - [ ] `MecanumKinematics`, `ThreeWheelOmniKinematics`, `FourWheelOmniKinematics` (Member 3)
 - [ ] `kinematics_node.py` wired to real `inverse()` (Member 4)
 - [ ] `wheel_odometry_node.py` wired to real `forward()` (Member 5)
+
+
+
+How to run Task 11.3 
+
+
+
+first Terminal :
+cd ~/Downloads/rusteze_kinematics
+source install/setup.bash
+ros2 run rusteze_kinematics kinematics_node
+
+second terminal : 
+cd ~/Downloads/rusteze_kinematics
+source install/setup.bash
+ros2 run rusteze_kinematics wheel_odometry_node
+
+third terminal : 
+ros2 topic echo --flow-style /odom
+
+fourth terminal : 
+ros2 topic pub /encoder_speeds std_msgs/msg/Float64MultiArray "{data: [50.0, 50.0, 50.0, 50.0]}"
+
