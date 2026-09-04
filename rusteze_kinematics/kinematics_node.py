@@ -44,19 +44,18 @@ class KinematicsNode(Node):
         )
 
     def cmd_vel_callback(self, msg: Twist):
-        vx = msg.linear.x
-        vy = msg.linear.y
-        wz = msg.angular.z
+       vx = msg.linear.x
+       vy = msg.linear.y
+       wz = msg.angular.z
 
-        # TODO(Member 4): once inverse() is implemented by Member 2/3, this
-        # will return real wheel speeds. Handle NotImplementedError gracefully
-        # until then if you want to test the plumbing early.
-        wheel_speeds = self.kinematics.inverse(vx, vy, wz)
-
-        out = Float64MultiArray()
-        out.data = [float(w) for w in wheel_speeds]
-        self.setpoint_pub.publish(out)
-
+       try:
+            wheel_speeds = self.kinematics.inverse(vx, vy, wz)
+       except NotImplementedError as e:
+           self.get_logger().warn(str(e))
+           return
+       out = Float64MultiArray()
+       out.data = [float(w) for w in wheel_speeds]
+       self.setpoint_pub.publish(out)
 
 def main(args=None):
     rclpy.init(args=args)
