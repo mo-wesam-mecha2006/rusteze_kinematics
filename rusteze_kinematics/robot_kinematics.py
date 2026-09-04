@@ -52,7 +52,7 @@ class Kinematics:
         raise NotImplementedError("Subclasses must implement forward()")
 
 
-# ---------------------------------------------------------------------------
+
 # Member 2
 # ---------------------------------------------------------------------------
 class DiffDriveKinematics(Kinematics):
@@ -63,8 +63,10 @@ class DiffDriveKinematics(Kinematics):
     Left wheels (FL, RL) share the same speed.
     Right wheels (FR, RR) share the same speed.
     """
-    def init(self, L: float, W: float, R: float):
-        super().init(L, W, R)
+
+    def __init__(self, L: float, W: float, R: float):
+        super().__init__(L, W, R)
+
 
         # --- Inverse Kinematics Matrix ---
         # Maps [vx, wz] -> [w_left, w_right]
@@ -181,4 +183,7 @@ def build_kinematics(drive_type: str, L: float, W: float, R: float) -> Kinematic
         raise ValueError(
             f"Unknown drive_type '{drive_type}'. Valid options: {list(DRIVE_TYPE_MAP)}"
         )
+
     return cls(L, W, R)
+
+
