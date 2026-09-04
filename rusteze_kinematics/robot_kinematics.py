@@ -56,25 +56,64 @@ class Kinematics:
 # Member 2
 # ---------------------------------------------------------------------------
 class DiffDriveKinematics(Kinematics):
-    """2-wheel differential drive (report as a 4-element array: e.g.
-    [left, right, left, right] or [left, right, 0, 0] - confirm the
-    convention with Member 4/5 and document it here once decided)."""
+    """
+    Differential drive kinematics for a 4-wheel robot.
+    
+    Convention: wheel speed order is [front_left, front_right, rear_left, rear_right].
+    Left wheels (FL, RL) share the same speed.
+    Right wheels (FR, RR) share the same speed.
+    """
+    def init(self, L: float, W: float, R: float):
+        super().init(L, W, R)
 
-    def __init__(self, L: float, W: float, R: float):
-        super().__init__(L, W, R)
-        # TODO(Member 2): define self.M_inverse / self.M_forward, e.g.
-        # M_inverse maps [vx, wz] -> [w_left, w_right] using L and R.
-        self.M_inverse = None
-        self.M_forward = None
+        # --- Inverse Kinematics Matrix ---
+        # Maps [vx, wz] -> [w_left, w_right]
+        # w_left  = (vx - (wz * L/2)) / R
+        # w_right = (vx + (wz * L/2)) / R
+        self.M_inverse = np.array([
+            [1.0 / self.R, -self.L / (2.0 * self.R)],
+            [1.0 / self.R,  self.L / (2.0 * self.R)]
+        ])
+
+        # --- Forward Kinematics Matrix ---
+        # Maps [w_left, w_right] -> [vx, wz]
+        # vx = (w_left + w_right) * R / 2
+        # wz = (w_right - w_left) * R / L
+        self.M_forward = np.array([
+            [self.R / 2.0, self.R / 2.0],         # vx coefficients
+            [-self.R / self.L, self.R / self.L]   # wz coefficients
+        ])
 
     def inverse(self, vx: float, vy: float, wz: float):
-        # TODO(Member 2): implement using self.M_inverse
-        raise NotImplementedError("Member 2: implement DiffDriveKinematics.inverse")
+        """
+        Convert chassis velocity [vx, vy, wz] to wheel speeds.
+        Note: vy is ignored for differential drive.
+        Returns: [w_FL, w_FR, w_RL, w_RR] in rad/s.
+        """
+        # Compute left and right wheel speeds using the inverse matrix
+        w_left, w_right = self.M_inverse.dot([vx, wz])
+
+        # Return speeds for 4 wheels: [FL, FR, RL, RR]
+        # Left wheels (FL, RL) get w_left, Right wheels (FR, RR) get w_right
+        return [w_left, w_right, w_left, w_right]
 
     def forward(self, w):
-        # TODO(Member 2): implement using self.M_forward
-        raise NotImplementedError("Member 2: implement DiffDriveKinematics.forward")
+        """
+        Convert measured wheel speeds [w_FL, w_FR, w_RL, w_RR] to chassis velocity.
+        Returns: (vx, vy, wz) where vy is always 0 for diff drive.
+        """
+        # Extract individual wheel speeds
+        w_FL, w_FR, w_RL, w_RR = w
 
+        # Average left and right wheel speeds for robustness
+        w_left = (w_FL + w_RL) / 2.0
+        w_right = (w_FR + w_RR) / 2.0
+
+        # Compute chassis velocities using the forward matrix
+        vx, wz = self.M_forward.dot([w_left, w_right])
+        vy = 0.0  # No lateral velocity for diff drive
+
+        return vx, vy, wz
 
 # ---------------------------------------------------------------------------
 # Member 3
