@@ -127,10 +127,19 @@ class MecanumKinematics(Kinematics):
         self.M_forward = None
 
     def inverse(self, vx: float, vy: float, wz: float):
-        raise NotImplementedError("Member 3: implement MecanumKinematics.inverse")
+        w1 = (vx - vy -(self.L + self.W)*wz)/self.R #angular velocuty_for_front_left_wheel
+        w2 = (vx + vy +(self.L + self.W)*wz)/self.R #angular velocuty_for_front_right_wheel
+        w3 = (vx + vy - (self.L + self.W)*wz)/self.R #angular velocuty_for_rear_left_wheel
+        w4 = (vx - vy +(self.L + self.W)*wz)/self.R #angular velocuty_for_rear_right_wheel
+        w = [w1,w2,w3,w4]
+        return w
 
     def forward(self, w):
-        raise NotImplementedError("Member 3: implement MecanumKinematics.forward")
+        vx = (w[0] + w[1] + w[2] + w[3])*(self.R/4)
+        vy = (-w[0] + w[1] + w[2] - w[3])*(self.R/4)
+        wz = (-w[0] + w[1] - w[2] + w[3])*(self.R/(4*(self.L+self.W)))
+        chassis_vel = [vx,vy,wz]
+        return chassis_vel
 
 
 class ThreeWheelOmniKinematics(Kinematics):
@@ -143,10 +152,19 @@ class ThreeWheelOmniKinematics(Kinematics):
         self.M_forward = None
 
     def inverse(self, vx: float, vy: float, wz: float):
-        raise NotImplementedError("Member 3: implement ThreeWheelOmniKinematics.inverse")
+        w1 = (-vx + self.L * wz) /self.R
+        w2 = (0.5 * vx - ((3**0.5)/2) * vy + self.L *wz ) /self.R
+        w3 = (0.5 * vx + ((3**0.5)/2) *vy +self.L *wz)/self.R
+        w = [w1,w2,w3]
+        return w
 
     def forward(self, w):
-        raise NotImplementedError("Member 3: implement ThreeWheelOmniKinematics.forward")
+        vx = (-2 * w[0] + w[1] +w[2])*(self.R/3)
+        vy = (-w[1] + w[2])*(self.R/(3**0.5))
+        wz = (w[0] + w[1] + w[2])*(self.R / (3*self.L))
+        chassis_vel = [vx,vy,wz]
+        return chassis_vel
+        
 
 
 class FourWheelOmniKinematics(Kinematics):
@@ -159,10 +177,20 @@ class FourWheelOmniKinematics(Kinematics):
         self.M_forward = None
 
     def inverse(self, vx: float, vy: float, wz: float):
-        raise NotImplementedError("Member 3: implement FourWheelOmniKinematics.inverse")
-
+        w1 = (- vx *((2**0.5)/2)+vy* ((2**0.5)/2)+ self.L * wz) / self.R
+        w2 = ( vx *((2**0.5)/2)+vy* ((2**0.5)/2)- self.L * wz) / self.R
+        w3 = ( vx *((2**0.5)/2)+vy* ((2**0.5)/2)+ self.L * wz) / self.R
+        w4 = (- vx *((2**0.5)/2)+vy* ((2**0.5)/2)- self.L * wz) / self.R
+        w = [w1,w2,w3,w4]
+        return w
+    
     def forward(self, w):
-        raise NotImplementedError("Member 3: implement FourWheelOmniKinematics.forward")
+        vx = (-w[0] + w[1] + w[2] - w[3])*(self.R*(2**0.5)/4)
+        vy = (w[0] + w[1] + w[2] + w[3])*(self.R*(2**0.5)/4)
+        wz = (w[0] - w[1] + w[2] - w[3])*(self.R/(4*self.L))
+        chassis_vel = [vx,vy,wz]
+        return chassis_vel
+
 
 
 DRIVE_TYPE_MAP = {
